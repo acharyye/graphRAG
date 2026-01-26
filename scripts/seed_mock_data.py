@@ -8,7 +8,7 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from passlib.context import CryptContext
+import hashlib
 
 from src.connectors.mock_data import MockDataGenerator
 from src.graph.client import get_neo4j_client
@@ -17,8 +17,10 @@ from src.graph.ingest import DataIngester
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def simple_hash(password: str) -> str:
+    """Simple hash for test data (not for production)."""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 def main():
@@ -94,7 +96,7 @@ def main():
 
     # Generate and ingest users
     logger.info("Generating and ingesting users...")
-    hashed_password = pwd_context.hash("password123")  # Default test password
+    hashed_password = simple_hash("password123")  # Default test password
     users = generator.generate_users(data["clients"], hashed_password)
     for user in users:
         ingester.ingest_user(user)

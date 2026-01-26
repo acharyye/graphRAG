@@ -65,14 +65,22 @@ async def login(
         settings=settings,
     )
 
+    # Convert neo4j DateTime to Python datetime
+    created_at = user_data.get("created_at")
+    updated_at = user_data.get("updated_at")
+    if hasattr(created_at, "to_native"):
+        created_at = created_at.to_native()
+    if hasattr(updated_at, "to_native"):
+        updated_at = updated_at.to_native()
+
     user = UserResponse(
         id=user_data["id"],
         email=user_data["email"],
         name=user_data["name"],
         role=UserRole(user_data["role"]),
         client_ids=user_data.get("client_ids", []),
-        created_at=user_data.get("created_at", datetime.utcnow()),
-        updated_at=user_data.get("updated_at", datetime.utcnow()),
+        created_at=created_at or datetime.utcnow(),
+        updated_at=updated_at or datetime.utcnow(),
     )
 
     logger.info(f"User logged in: {user.email}")

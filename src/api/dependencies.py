@@ -1,5 +1,6 @@
 """FastAPI dependency injection."""
 
+import hashlib
 import logging
 from datetime import datetime, timedelta
 from typing import Annotated
@@ -7,7 +8,6 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError, jwt
-from passlib.context import CryptContext
 
 from config.settings import Settings, get_settings
 from src.graph.client import Neo4jClient, get_neo4j_client
@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 # Security
 security = HTTPBearer()
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 def get_settings_dep() -> Settings:
@@ -39,12 +38,14 @@ def get_graphrag_dep() -> GraphRAGEngine:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a password against a hash."""
-    return pwd_context.verify(plain_password, hashed_password)
+    # Using SHA256 for development/testing (use bcrypt in production)
+    return hashlib.sha256(plain_password.encode()).hexdigest() == hashed_password
 
 
 def hash_password(password: str) -> str:
     """Hash a password."""
-    return pwd_context.hash(password)
+    # Using SHA256 for development/testing (use bcrypt in production)
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 def create_access_token(
