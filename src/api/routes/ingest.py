@@ -59,11 +59,20 @@ async def create_client(
         budget=c.get("budget", 0),
         budget_currency=c.get("budget_currency", "USD"),
         data_retention_days=c.get("data_retention_days", 365),
-        contract_start=c.get("contract_start", date.today()),
+        contract_start=_convert_neo4j_datetime(c.get("contract_start")) or date.today(),
         status=c.get("status", "active"),
-        created_at=c.get("created_at"),
-        updated_at=c.get("updated_at"),
+        created_at=_convert_neo4j_datetime(c.get("created_at")),
+        updated_at=_convert_neo4j_datetime(c.get("updated_at")),
     )
+
+
+def _convert_neo4j_datetime(value):
+    """Convert Neo4j datetime to Python datetime."""
+    if value is None:
+        return None
+    if hasattr(value, 'to_native'):
+        return value.to_native()
+    return value
 
 
 @router.get("/clients", response_model=ClientListResponse)
@@ -95,10 +104,10 @@ async def list_clients(
                 budget=c.get("budget", 0),
                 budget_currency=c.get("budget_currency", "USD"),
                 data_retention_days=c.get("data_retention_days", 365),
-                contract_start=c.get("contract_start", date.today()),
+                contract_start=_convert_neo4j_datetime(c.get("contract_start")) or date.today(),
                 status=c.get("status", "active"),
-                created_at=c.get("created_at"),
-                updated_at=c.get("updated_at"),
+                created_at=_convert_neo4j_datetime(c.get("created_at")),
+                updated_at=_convert_neo4j_datetime(c.get("updated_at")),
             )
         )
 
@@ -168,10 +177,10 @@ async def update_client(
         budget=c.get("budget", 0),
         budget_currency=c.get("budget_currency", "USD"),
         data_retention_days=c.get("data_retention_days", 365),
-        contract_start=c.get("contract_start", date.today()),
+        contract_start=_convert_neo4j_datetime(c.get("contract_start")) or date.today(),
         status=c.get("status", "active"),
-        created_at=c.get("created_at"),
-        updated_at=c.get("updated_at"),
+        created_at=_convert_neo4j_datetime(c.get("created_at")),
+        updated_at=_convert_neo4j_datetime(c.get("updated_at")),
     )
 
 

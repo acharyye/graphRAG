@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from config.settings import get_settings
 from src.graph.client import get_neo4j_client
 
-from .routes import auth_router, ingest_router, query_router, reports_router
+from .routes import auth_router, dashboard_router, ingest_router, query_router, reports_router
 
 # Configure logging
 logging.basicConfig(
@@ -88,6 +88,7 @@ async def global_exception_handler(request: Request, exc: Exception) -> JSONResp
 
 # Include routers
 app.include_router(auth_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
 app.include_router(query_router, prefix="/api")
 app.include_router(ingest_router, prefix="/api")
 app.include_router(reports_router, prefix="/api")

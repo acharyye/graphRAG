@@ -17,6 +17,15 @@ from .models import TokenPayload, UserResponse, UserRole
 
 logger = logging.getLogger(__name__)
 
+
+def _convert_neo4j_datetime(value):
+    """Convert Neo4j datetime to Python datetime."""
+    if value is None:
+        return None
+    if hasattr(value, 'to_native'):
+        return value.to_native()
+    return value
+
 # Security
 security = HTTPBearer()
 
@@ -150,8 +159,8 @@ async def get_current_user(
         name=user_data["name"],
         role=UserRole(user_data["role"]),
         client_ids=user_data.get("client_ids", []),
-        created_at=user_data.get("created_at", datetime.utcnow()),
-        updated_at=user_data.get("updated_at", datetime.utcnow()),
+        created_at=_convert_neo4j_datetime(user_data.get("created_at")) or datetime.utcnow(),
+        updated_at=_convert_neo4j_datetime(user_data.get("updated_at")) or datetime.utcnow(),
     )
 
 
