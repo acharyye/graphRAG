@@ -1,4 +1,4 @@
-"""Streamlit UI for Marketing GraphRAG."""
+"""Marketing GraphRAG - Modern UI."""
 
 import io
 import os
@@ -15,447 +15,662 @@ import streamlit as st
 # Add project root to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
+# ---------------------------------------------------------------------------
 # Page config
+# ---------------------------------------------------------------------------
 st.set_page_config(
-    page_title="Marketing GraphRAG",
-    page_icon="📊",
+    page_title="GraphRAG",
+    page_icon="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>G</text></svg>",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Corporate styling
-st.markdown(
-    """
-    <style>
-    /* Main app background */
-    .stApp {
-        background-color: #f8fafc;
-    }
+# ---------------------------------------------------------------------------
+# Design System CSS
+# ---------------------------------------------------------------------------
+st.markdown("""<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
-    /* Ensure all text is visible */
-    .stApp, .stApp * {
-        color: #1a202c;
-    }
+/* ---- Base ---- */
+.stApp {
+    background-color: #f9fafb;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.stApp, .stApp * { color: #111827; }
 
-    /* Main header */
-    .main-header {
-        color: #1a365d !important;
-        font-size: 2rem;
-        font-weight: 700;
-        margin-bottom: 1rem;
-    }
+#MainMenu, footer { visibility: hidden; }
 
-    /* Sub header */
-    .sub-header {
-        color: #2d3748 !important;
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
+/* ---- Sidebar ---- */
+[data-testid="stSidebar"] {
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+}
+[data-testid="stSidebar"] * { color: #111827 !important; }
+[data-testid="stSidebar"] .stSelectbox label,
+[data-testid="stSidebar"] .stDateInput label {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280 !important;
+}
 
-    /* Chat message containers */
-    .stChatMessage {
-        background-color: #ffffff !important;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        margin-bottom: 0.5rem;
-    }
+/* ---- Cards ---- */
+.metric-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    transition: box-shadow 0.15s ease;
+}
+.metric-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.metric-card .label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6b7280;
+    margin-bottom: 0.35rem;
+}
+.metric-card .value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #111827;
+    line-height: 1.2;
+}
+.metric-card .trend-up {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #059669;
+    margin-top: 0.25rem;
+}
+.metric-card .trend-down {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #dc2626;
+    margin-top: 0.25rem;
+}
 
-    /* User messages */
-    [data-testid="stChatMessageContent"] {
-        color: #1a202c !important;
-        background-color: transparent !important;
-    }
+/* ---- Insight banner ---- */
+.insight-banner {
+    background: linear-gradient(135deg, #eef2ff 0%, #faf5ff 100%);
+    border: 1px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.25rem;
+}
+.insight-banner .title {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #6366f1;
+    margin-bottom: 0.4rem;
+}
+.insight-banner p {
+    color: #374151;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0;
+}
 
-    /* Chat input */
-    .stChatInput, .stChatInput textarea {
-        background-color: #ffffff !important;
-        color: #1a202c !important;
-        border: 1px solid #cbd5e0 !important;
-    }
+/* ---- Section headers ---- */
+.section-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 1.25rem 0 0.75rem 0;
+}
 
-    .stChatInput textarea::placeholder {
-        color: #718096 !important;
-    }
+/* ---- Page header ---- */
+.page-header {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 0.15rem;
+}
+.page-desc {
+    color: #6b7280;
+    font-size: 0.95rem;
+    margin-bottom: 1.5rem;
+}
 
-    /* Markdown text in chat */
-    .stMarkdown, .stMarkdown p, .stMarkdown span {
-        color: #1a202c !important;
-    }
+/* ---- Brand ---- */
+.brand-mark {
+    font-weight: 700;
+    font-size: 1.125rem;
+    margin-bottom: 0.15rem;
+}
+.brand-mark span {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.brand-sub {
+    font-size: 0.75rem;
+    color: #9ca3af;
+    margin-bottom: 1rem;
+}
 
-    /* Sidebar styling */
-    [data-testid="stSidebar"] {
-        background-color: #ffffff;
-    }
+/* ---- Confidence badges ---- */
+.conf-badge {
+    display: inline-block;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.conf-high { background: #ecfdf5; color: #059669; }
+.conf-medium { background: #fffbeb; color: #d97706; }
+.conf-low { background: #fef2f2; color: #dc2626; }
 
-    [data-testid="stSidebar"] * {
-        color: #1a202c !important;
-    }
+/* ---- Source tags ---- */
+.source-tag {
+    display: inline-block;
+    background: #f3f4f6;
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    color: #6b7280;
+    margin: 0.15rem;
+}
 
-    /* Metric cards */
-    .metric-card {
-        background-color: white;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
+/* ---- Status badges ---- */
+.status-active {
+    display: inline-block;
+    background: #ecfdf5;
+    color: #059669;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.status-paused {
+    display: inline-block;
+    background: #fffbeb;
+    color: #d97706;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.status-error {
+    display: inline-block;
+    background: #fef2f2;
+    color: #dc2626;
+    padding: 0.2rem 0.65rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
 
-    /* Source citations */
-    .source-citation {
-        background-color: #edf2f7;
-        padding: 0.5rem;
-        border-radius: 0.25rem;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
-        color: #2d3748 !important;
-    }
+/* ---- Suggestion pills ---- */
+.suggestion-pill {
+    display: inline-block;
+    padding: 0.45rem 1rem;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    color: #374151;
+    margin: 0.25rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.suggestion-pill:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #eef2ff;
+}
 
-    /* Confidence indicators */
-    .confidence-high { color: #22543d !important; }
-    .confidence-medium { color: #744210 !important; }
-    .confidence-low { color: #742a2a !important; }
+/* ---- Login ---- */
+.login-card {
+    max-width: 420px;
+    margin: 4rem auto;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+.login-brand {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+}
+.login-brand span {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.login-sub {
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+}
 
-    /* Buttons */
-    .stButton button {
-        color: #ffffff !important;
-        background-color: #3182ce !important;
-    }
+/* ---- Platform card ---- */
+.platform-card {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+.platform-card.connected {
+    border-color: #a7f3d0;
+    background: linear-gradient(135deg, #ecfdf5, #f0fdf4);
+}
+.platform-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
 
-    .stButton button:hover {
-        background-color: #2c5282 !important;
-    }
+/* ---- Empty state ---- */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #9ca3af;
+}
+.empty-state h3 {
+    color: #374151;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
 
-    /* Form inputs */
-    .stTextInput input, .stSelectbox select, .stDateInput input {
-        color: #1a202c !important;
-        background-color: #ffffff !important;
-    }
+/* ---- Streamlit widget overrides ---- */
 
-    /* Labels */
-    .stTextInput label, .stSelectbox label, .stDateInput label {
-        color: #2d3748 !important;
-    }
+/* Buttons */
+.stButton button {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+    padding: 0.5rem 1.25rem !important;
+    transition: background 0.15s ease !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stButton button:hover {
+    background: #4f46e5 !important;
+}
 
-    /* Expander */
-    .streamlit-expanderHeader {
-        color: #1a202c !important;
-        background-color: #edf2f7 !important;
-    }
+/* Text inputs */
+.stTextInput input, .stNumberInput input {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stTextInput input:focus, .stNumberInput input:focus {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.08) !important;
+}
 
-    .streamlit-expanderContent {
-        color: #1a202c !important;
-        background-color: #ffffff !important;
-    }
+/* Labels */
+.stTextInput label, .stSelectbox label, .stDateInput label,
+.stNumberInput label, .stMultiSelect label, .stFileUploader label {
+    color: #374151 !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+}
 
-    /* Info/Warning/Error boxes */
-    .stAlert {
-        color: #1a202c !important;
-    }
+/* Selectbox */
+.stSelectbox > div > div {
+    border-radius: 8px !important;
+}
 
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-    }
+/* Tabs */
+.stTabs [data-baseweb="tab-list"] {
+    gap: 0;
+    background: #f3f4f6;
+    border-radius: 10px;
+    padding: 0.25rem;
+}
+.stTabs [data-baseweb="tab"] {
+    background: transparent;
+    color: #6b7280 !important;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 500;
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+}
+.stTabs [aria-selected="true"] {
+    background: #ffffff !important;
+    color: #111827 !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+}
 
-    .stTabs [data-baseweb="tab"] {
-        background-color: #edf2f7;
-        color: #1a202c !important;
-        border-radius: 4px;
-        padding: 8px 16px;
-    }
+/* Metrics */
+[data-testid="stMetricValue"] {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    color: #111827 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+[data-testid="stMetricLabel"] {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #6b7280 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-family: 'Inter', sans-serif !important;
+}
 
-    .stTabs [aria-selected="true"] {
-        background-color: #3182ce !important;
-        color: #ffffff !important;
-    }
+/* Dataframes */
+.stDataFrame { border-radius: 12px !important; overflow: hidden; }
 
-    /* Data tables */
-    .stDataFrame {
-        background-color: #ffffff;
-    }
+/* Chat */
+.stChatMessage {
+    background: #ffffff !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    padding: 1rem 1.25rem !important;
+    margin-bottom: 0.5rem !important;
+}
+[data-testid="stChatMessageContent"] { color: #111827 !important; }
+.stChatInput, .stChatInput textarea {
+    background: #ffffff !important;
+    color: #111827 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 12px !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stChatInput textarea::placeholder { color: #9ca3af !important; }
+.stMarkdown, .stMarkdown p, .stMarkdown span { color: #111827 !important; }
 
-    /* Success/Error cards */
-    .success-card {
-        background-color: #c6f6d5;
-        border: 1px solid #9ae6b4;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        color: #22543d !important;
-    }
+/* Expander */
+.streamlit-expanderHeader {
+    color: #111827 !important;
+    background: #f9fafb !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 0.875rem !important;
+}
+.streamlit-expanderContent { color: #111827 !important; }
 
-    .error-card {
-        background-color: #fed7d7;
-        border: 1px solid #feb2b2;
-        border-radius: 0.5rem;
-        padding: 1rem;
-        color: #742a2a !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+/* Alerts */
+.stAlert { border-radius: 10px !important; }
 
-# API configuration
+/* Dividers */
+hr { border-color: #f3f4f6 !important; }
+
+/* Radio navigation in sidebar */
+[data-testid="stSidebar"] .stRadio > div {
+    gap: 0.125rem;
+}
+[data-testid="stSidebar"] .stRadio label {
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    font-size: 0.9rem !important;
+    transition: background 0.1s ease;
+}
+[data-testid="stSidebar"] .stRadio label:hover {
+    background: #f3f4f6;
+}
+
+/* Form submit buttons */
+.stFormSubmitButton button {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+}
+.stFormSubmitButton button:hover {
+    background: #4f46e5 !important;
+}
+
+/* Download buttons */
+.stDownloadButton button {
+    background: #ffffff !important;
+    color: #374151 !important;
+    border: 1px solid #e5e7eb !important;
+    border-radius: 8px !important;
+}
+.stDownloadButton button:hover {
+    background: #f9fafb !important;
+    border-color: #6366f1 !important;
+    color: #6366f1 !important;
+}
+</style>""", unsafe_allow_html=True)
+
+# ---------------------------------------------------------------------------
+# Constants & Session State
+# ---------------------------------------------------------------------------
 API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000/api")
 
-# Session state initialization
-if "token" not in st.session_state:
-    st.session_state.token = None
-if "user" not in st.session_state:
-    st.session_state.user = None
-if "selected_client" not in st.session_state:
-    st.session_state.selected_client = None
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "session_id" not in st.session_state:
-    st.session_state.session_id = str(uuid4())
+for key, default in {
+    "token": None,
+    "user": None,
+    "selected_client": None,
+    "chat_history": [],
+    "session_id": str(uuid4()),
+}.items():
+    if key not in st.session_state:
+        st.session_state[key] = default
 
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 def api_request(method: str, endpoint: str, **kwargs):
-    """Make API request with authentication."""
+    """Make an authenticated API request."""
     headers = kwargs.pop("headers", {})
     if st.session_state.token:
         headers["Authorization"] = f"Bearer {st.session_state.token}"
-
     url = f"{API_BASE_URL}{endpoint}"
-
     try:
-        response = requests.request(method, url, headers=headers, timeout=60, **kwargs)
-        return response
+        return requests.request(method, url, headers=headers, timeout=60, **kwargs)
     except requests.exceptions.ConnectionError:
-        st.error("Cannot connect to API server. Please ensure it's running.")
+        st.error("Cannot reach the server. Please make sure the API is running.")
         return None
     except requests.exceptions.Timeout:
-        st.error("Request timed out. Please try again.")
+        st.error("The request timed out. Please try again.")
         return None
 
 
+def _greeting():
+    """Return a time-appropriate greeting."""
+    hour = datetime.now().hour
+    if hour < 12:
+        return "Good morning"
+    elif hour < 17:
+        return "Good afternoon"
+    return "Good evening"
+
+
+def _fmt_currency(v, compact=False):
+    if v is None:
+        return "$0"
+    if compact and abs(v) >= 1000:
+        return f"${v/1000:,.1f}k"
+    return f"${v:,.0f}"
+
+
+def _fmt_number(v, compact=False):
+    if v is None:
+        return "0"
+    if compact and abs(v) >= 1_000_000:
+        return f"{v/1_000_000:,.1f}M"
+    if compact and abs(v) >= 1000:
+        return f"{v/1000:,.1f}k"
+    return f"{v:,.0f}"
+
+
+# ---------------------------------------------------------------------------
+# Login Page
+# ---------------------------------------------------------------------------
+
 def login_page():
-    """Render login page."""
-    col1, col2, col3 = st.columns([1, 2, 1])
+    """Clean, centered login page."""
+    st.markdown("<div style='height: 2rem'></div>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1, 1.5, 1])
     with col2:
-        st.markdown('<h1 class="main-header">Marketing GraphRAG</h1>', unsafe_allow_html=True)
-        st.markdown("#### Sign In to Your Account")
+        st.markdown("""
+        <div class="login-card">
+            <div class="login-brand"><span>GraphRAG</span></div>
+            <div class="login-sub">Marketing intelligence, powered by AI</div>
+        </div>
+        """, unsafe_allow_html=True)
 
         with st.form("login_form"):
-            email = st.text_input("Email", placeholder="admin@agency.com")
+            email = st.text_input("Email", placeholder="you@company.com")
             password = st.text_input("Password", type="password", placeholder="Enter your password")
-            submitted = st.form_submit_button("Sign In", use_container_width=True)
+            submitted = st.form_submit_button("Sign in", use_container_width=True)
 
             if submitted:
                 response = api_request(
-                    "POST",
-                    "/auth/login",
+                    "POST", "/auth/login",
                     json={"email": email, "password": password},
                 )
-
                 if response and response.status_code == 200:
                     data = response.json()
                     st.session_state.token = data["access_token"]
                     st.session_state.user = data["user"]
                     st.rerun()
                 else:
-                    st.error("Invalid email or password")
+                    st.error("Invalid email or password. Please try again.")
 
+
+# ---------------------------------------------------------------------------
+# Sidebar
+# ---------------------------------------------------------------------------
 
 def sidebar():
-    """Render sidebar with client selector and navigation."""
+    """Sidebar: branding, client picker, navigation, date range, sign-out."""
     with st.sidebar:
-        st.markdown(f"### {st.session_state.user['name']}")
-        st.caption(f"Role: {st.session_state.user['role'].upper()}")
+        # Brand
+        st.markdown('<div class="brand-mark"><span>GraphRAG</span></div>', unsafe_allow_html=True)
+        st.markdown('<div class="brand-sub">Marketing Intelligence</div>', unsafe_allow_html=True)
+
+        user = st.session_state.user
+        st.caption(f"Signed in as **{user['name']}**")
 
         st.divider()
 
-        # Client selector (not shown on Admin page)
-        st.markdown("#### Select Client")
-        response = api_request("GET", "/ingest/clients")
-
-        if response and response.status_code == 200:
-            clients_data = response.json()
-            clients = clients_data.get("clients", [])
-
-            if clients:
-                # Remove duplicates by name (keep first occurrence)
-                seen_names = set()
-                unique_clients = []
-                for c in clients:
-                    if c["name"] not in seen_names:
-                        seen_names.add(c["name"])
-                        unique_clients.append(c)
-
-                client_names = {c["id"]: c["name"] for c in unique_clients}
-                selected_id = st.selectbox(
-                    "Client",
-                    options=list(client_names.keys()),
-                    format_func=lambda x: client_names[x],
-                    label_visibility="collapsed",
-                )
-                st.session_state.selected_client = next(
-                    (c for c in unique_clients if c["id"] == selected_id), None
-                )
-            else:
-                st.info("No clients available")
-        else:
-            st.error("Failed to load clients")
-
-        st.divider()
-
-        # Navigation - Show Admin option only for admins
-        st.markdown("#### Navigation")
-        nav_options = ["Query", "Dashboard", "Reports", "Data Import"]
-        if st.session_state.user.get("role") == "admin":
-            nav_options.append("Admin")
+        # Navigation
+        nav_items = ["Home", "Ask", "Reports", "Data Sources"]
+        if user.get("role") == "admin":
+            nav_items.append("Settings")
 
         page = st.radio(
-            "Go to",
-            nav_options,
+            "Navigation",
+            nav_items,
             label_visibility="collapsed",
         )
 
         st.divider()
 
-        # Date range selector
-        st.markdown("#### Date Range")
-        col1, col2 = st.columns(2)
-        with col1:
-            start_date = st.date_input(
-                "Start",
-                value=datetime.now() - timedelta(days=30),
-                label_visibility="collapsed",
-            )
-        with col2:
-            end_date = st.date_input(
-                "End",
-                value=datetime.now(),
-                label_visibility="collapsed",
-            )
+        # Client picker
+        st.markdown(
+            "<div style='font-size:0.75rem;font-weight:600;text-transform:uppercase;"
+            "letter-spacing:0.05em;color:#6b7280;margin-bottom:0.25rem'>Account</div>",
+            unsafe_allow_html=True,
+        )
+        response = api_request("GET", "/ingest/clients")
 
+        if response and response.status_code == 200:
+            clients = response.json().get("clients", [])
+            if clients:
+                # Deduplicate by name
+                seen = set()
+                unique = []
+                for c in clients:
+                    if c["name"] not in seen:
+                        seen.add(c["name"])
+                        unique.append(c)
+
+                names = {c["id"]: c["name"] for c in unique}
+                selected_id = st.selectbox(
+                    "Account",
+                    options=list(names.keys()),
+                    format_func=lambda x: names[x],
+                    label_visibility="collapsed",
+                )
+                st.session_state.selected_client = next(
+                    (c for c in unique if c["id"] == selected_id), None
+                )
+            else:
+                st.info("No accounts yet")
+        else:
+            st.warning("Could not load accounts")
+
+        st.divider()
+
+        # Date range
+        st.markdown(
+            "<div style='font-size:0.75rem;font-weight:600;text-transform:uppercase;"
+            "letter-spacing:0.05em;color:#6b7280;margin-bottom:0.25rem'>Date Range</div>",
+            unsafe_allow_html=True,
+        )
+        c1, c2 = st.columns(2)
+        with c1:
+            start_date = st.date_input(
+                "From", value=datetime.now() - timedelta(days=30), label_visibility="collapsed"
+            )
+        with c2:
+            end_date = st.date_input(
+                "To", value=datetime.now(), label_visibility="collapsed"
+            )
         st.session_state.date_range = (
             start_date.strftime("%Y-%m-%d"),
             end_date.strftime("%Y-%m-%d"),
         )
 
-        st.divider()
-
-        # Logout
-        if st.button("Sign Out", use_container_width=True):
-            st.session_state.token = None
-            st.session_state.user = None
-            st.session_state.chat_history = []
+        # Spacer + sign-out
+        st.markdown("<div style='height:2rem'></div>", unsafe_allow_html=True)
+        if st.button("Sign out", use_container_width=True):
+            for k in ["token", "user", "chat_history", "selected_client"]:
+                st.session_state[k] = None
+            st.session_state.session_id = str(uuid4())
             st.rerun()
 
         return page
 
 
-def query_page():
-    """Render natural language query interface."""
-    st.markdown('<h1 class="main-header">Ask Questions</h1>', unsafe_allow_html=True)
+# ---------------------------------------------------------------------------
+# HOME (Dashboard)
+# ---------------------------------------------------------------------------
 
-    if not st.session_state.selected_client:
-        st.warning("Please select a client from the sidebar")
-        return
+def home_page():
+    """Insight-first dashboard for the selected client."""
+    user = st.session_state.user
+    client = st.session_state.selected_client
 
-    client_name = st.session_state.selected_client["name"]
-    st.markdown(f"*Querying data for **{client_name}***")
-
-    # Chat history display
-    for msg in st.session_state.chat_history:
-        with st.chat_message(msg["role"]):
-            st.markdown(msg["content"])
-            if msg.get("sources"):
-                with st.expander("Sources"):
-                    for source in msg["sources"]:
-                        st.markdown(
-                            f"- **{source['entity_type']}**: {source.get('entity_name', source['entity_id'])} "
-                            f"({source.get('date_range', 'N/A')})"
-                        )
-            if msg.get("confidence"):
-                conf = msg["confidence"]
-                conf_class = f"confidence-{conf['level']}"
-                st.markdown(
-                    f'<div class="{conf_class}">Confidence: {conf["level"].upper()} '
-                    f'({conf["overall"]:.0%})</div>',
-                    unsafe_allow_html=True,
-                )
-            if msg.get("recommendations"):
-                with st.expander("Recommendations"):
-                    for rec in msg["recommendations"]:
-                        st.markdown(f"- {rec}")
-
-    # Query input
-    query = st.chat_input("Ask a question about your marketing data...")
-
-    if query:
-        # Add user message to history
-        st.session_state.chat_history.append({"role": "user", "content": query})
-
-        # Make API request
-        with st.spinner("Analyzing data..."):
-            response = api_request(
-                "POST",
-                "/query",
-                json={
-                    "query": query,
-                    "client_id": st.session_state.selected_client["id"],
-                    "session_id": st.session_state.session_id,
-                    "date_range": st.session_state.date_range,
-                },
-            )
-
-        if response and response.status_code == 200:
-            data = response.json()
-
-            # Add assistant message to history
-            st.session_state.chat_history.append(
-                {
-                    "role": "assistant",
-                    "content": data["answer"],
-                    "sources": data.get("sources", []),
-                    "confidence": data.get("confidence"),
-                    "recommendations": data.get("recommendations"),
-                }
-            )
-        else:
-            error_msg = "Failed to process query"
-            if response:
-                error_msg = response.json().get("detail", error_msg)
-            st.session_state.chat_history.append(
-                {"role": "assistant", "content": f"Error: {error_msg}"}
-            )
-
-        st.rerun()
-
-    # Clear chat button
-    col1, col2, col3 = st.columns([1, 1, 2])
-    with col1:
-        if st.button("Clear Chat"):
-            st.session_state.chat_history = []
-            st.session_state.session_id = str(uuid4())
-            st.rerun()
-
-
-def dashboard_page():
-    """Render metrics dashboard with real data."""
-    st.markdown('<h1 class="main-header">Dashboard</h1>', unsafe_allow_html=True)
-
-    if not st.session_state.selected_client:
-        st.warning("Please select a client from the sidebar")
-        return
-
-    client_id = st.session_state.selected_client["id"]
-    client_name = st.session_state.selected_client["name"]
-
-    st.markdown(f"### {client_name} Performance")
-    st.caption(
-        f"Date range: {st.session_state.date_range[0]} to {st.session_state.date_range[1]}"
+    # Welcome
+    st.markdown(
+        f'<div class="page-header">{_greeting()}, {user["name"].split()[0]}</div>',
+        unsafe_allow_html=True,
     )
 
-    # Fetch real dashboard data from API
-    with st.spinner("Loading dashboard data..."):
+    if not client:
+        st.markdown('<div class="page-desc">Select an account from the sidebar to get started.</div>', unsafe_allow_html=True)
+        return
+
+    st.markdown(
+        f'<div class="page-desc">Here\'s how <strong>{client["name"]}</strong> is performing '
+        f'({st.session_state.date_range[0]} to {st.session_state.date_range[1]})</div>',
+        unsafe_allow_html=True,
+    )
+
+    client_id = client["id"]
+
+    # Fetch data
+    with st.spinner("Loading performance data..."):
         response = api_request(
             "GET",
-            f"/dashboard/{client_id}?start_date={st.session_state.date_range[0]}&end_date={st.session_state.date_range[1]}"
+            f"/dashboard/{client_id}"
+            f"?start_date={st.session_state.date_range[0]}"
+            f"&end_date={st.session_state.date_range[1]}",
         )
 
     if response and response.status_code == 200:
@@ -465,98 +680,130 @@ def dashboard_page():
         channel_breakdown = data.get("channel_breakdown", [])
         campaigns = data.get("campaigns", [])
     else:
-        # Fallback: fetch metrics directly via a query
-        st.info("Loading metrics from database...")
-        summary = fetch_metrics_summary(client_id)
-        daily_metrics = fetch_daily_metrics(client_id)
-        channel_breakdown = fetch_channel_breakdown(client_id)
-        campaigns = fetch_campaigns(client_id)
+        summary = _fetch_metrics_summary(client_id)
+        daily_metrics = _fetch_daily_metrics(client_id)
+        channel_breakdown = _fetch_channel_breakdown(client_id)
+        campaigns = _fetch_campaigns(client_id)
 
-    # Metrics row
-    cols = st.columns(6)
-    metrics_display = [
-        ("Total Spend", f"${summary.get('total_spend', 0):,.0f}", None),
-        ("Impressions", f"{summary.get('total_impressions', 0):,.0f}", None),
-        ("Clicks", f"{summary.get('total_clicks', 0):,.0f}", None),
-        ("Conversions", f"{summary.get('total_conversions', 0):,.0f}", None),
-        ("CTR", f"{summary.get('avg_ctr', 0):.2f}%", None),
-        ("ROAS", f"{summary.get('roas', 0):.2f}x", None),
+    # ---- Insight banner ----
+    spend = summary.get("total_spend", 0) or 0
+    conversions = summary.get("total_conversions", 0) or 0
+    roas = summary.get("roas", 0) or 0
+
+    if spend > 0 and conversions > 0:
+        cpa = spend / conversions if conversions else 0
+        insight_lines = []
+        if roas >= 3:
+            insight_lines.append(f"Strong return on ad spend at <strong>{roas:.1f}x</strong>.")
+        elif roas >= 1:
+            insight_lines.append(f"Your return on ad spend is <strong>{roas:.1f}x</strong> &mdash; profitable but with room to grow.")
+        else:
+            insight_lines.append(f"Return on ad spend is below break-even at <strong>{roas:.1f}x</strong>. Consider reviewing underperforming campaigns.")
+        insight_lines.append(
+            f"You generated <strong>{_fmt_number(conversions)}</strong> conversions "
+            f"at <strong>{_fmt_currency(cpa)}</strong> per conversion."
+        )
+        st.markdown(
+            '<div class="insight-banner">'
+            '<div class="title">Key Insight</div>'
+            f'<p>{"<br>".join(insight_lines)}</p>'
+            '</div>',
+            unsafe_allow_html=True,
+        )
+
+    # ---- KPI cards ----
+    cols = st.columns(5)
+    kpis = [
+        ("Ad Spend", _fmt_currency(spend, compact=True)),
+        ("Impressions", _fmt_number(summary.get("total_impressions", 0), compact=True)),
+        ("Clicks", _fmt_number(summary.get("total_clicks", 0), compact=True)),
+        ("Conversions", _fmt_number(conversions, compact=True)),
+        ("ROAS", f"{roas:.1f}x" if roas else "N/A"),
     ]
-
-    for col, (label, value, delta) in zip(cols, metrics_display):
+    for col, (label, value) in zip(cols, kpis):
         with col:
-            st.metric(label, value, delta)
+            st.markdown(
+                f'<div class="metric-card">'
+                f'<div class="label">{label}</div>'
+                f'<div class="value">{value}</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
-    st.divider()
+    st.markdown("<div style='height:1rem'></div>", unsafe_allow_html=True)
 
-    # Charts row
-    col1, col2 = st.columns(2)
+    # ---- Charts row ----
+    c1, c2 = st.columns([3, 2])
 
-    with col1:
-        st.markdown("#### Daily Performance")
+    with c1:
+        st.markdown('<div class="section-title">Performance Over Time</div>', unsafe_allow_html=True)
         if daily_metrics:
-            daily_df = pd.DataFrame(daily_metrics)
-            if 'date' in daily_df.columns:
-                daily_df['date'] = pd.to_datetime(daily_df['date'])
-
+            df = pd.DataFrame(daily_metrics)
+            if "date" in df.columns:
+                df["date"] = pd.to_datetime(df["date"])
                 fig = go.Figure()
-                fig.add_trace(
-                    go.Scatter(
-                        x=daily_df["date"],
-                        y=daily_df.get("spend", daily_df.get("total_spend", [])),
-                        name="Spend ($)",
-                        line=dict(color="#1a365d"),
-                    )
-                )
-                if "conversions" in daily_df.columns or "total_conversions" in daily_df.columns:
-                    conv_col = "conversions" if "conversions" in daily_df.columns else "total_conversions"
-                    fig.add_trace(
-                        go.Scatter(
-                            x=daily_df["date"],
-                            y=daily_df[conv_col] * 50,
-                            name="Conversions (x50)",
-                            line=dict(color="#38a169"),
-                        )
-                    )
+                spend_col = "spend" if "spend" in df.columns else "total_spend"
+                conv_col = "conversions" if "conversions" in df.columns else "total_conversions"
+                if spend_col in df.columns:
+                    fig.add_trace(go.Scatter(
+                        x=df["date"], y=df[spend_col],
+                        name="Spend", line=dict(color="#6366f1", width=2),
+                        fill="tozeroy", fillcolor="rgba(99,102,241,0.06)",
+                    ))
+                if conv_col in df.columns:
+                    fig.add_trace(go.Scatter(
+                        x=df["date"], y=df[conv_col],
+                        name="Conversions", line=dict(color="#10b981", width=2),
+                        yaxis="y2",
+                    ))
                 fig.update_layout(
-                    height=300,
-                    margin=dict(l=20, r=20, t=30, b=20),
-                    legend=dict(orientation="h", yanchor="bottom", y=1.02),
+                    height=320,
+                    margin=dict(l=0, r=0, t=10, b=0),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                    yaxis=dict(title=None, showgrid=True, gridcolor="#f3f4f6"),
+                    yaxis2=dict(title=None, overlaying="y", side="right", showgrid=False),
+                    xaxis=dict(showgrid=False),
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font=dict(family="Inter, sans-serif", size=12, color="#6b7280"),
                 )
                 st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("No daily metrics available for the selected period")
+            st.info("No daily data for the selected period.")
 
-    with col2:
-        st.markdown("#### Channel Breakdown")
+    with c2:
+        st.markdown('<div class="section-title">Spend by Channel</div>', unsafe_allow_html=True)
         if channel_breakdown:
-            channel_df = pd.DataFrame(channel_breakdown)
+            ch_df = pd.DataFrame(channel_breakdown)
+            spend_key = "spend" if "spend" in ch_df.columns else "total_spend"
             fig = px.pie(
-                channel_df,
-                values="spend" if "spend" in channel_df.columns else "total_spend",
-                names="channel",
-                color_discrete_sequence=["#1a365d", "#4299e1", "#48bb78", "#ed8936"],
+                ch_df, values=spend_key, names="channel",
+                color_discrete_sequence=["#6366f1", "#8b5cf6", "#a78bfa", "#c4b5fd", "#10b981", "#f59e0b"],
+                hole=0.55,
             )
             fig.update_layout(
-                height=300,
-                margin=dict(l=20, r=20, t=30, b=20),
+                height=320,
+                margin=dict(l=0, r=0, t=10, b=0),
+                showlegend=True,
+                legend=dict(orientation="h", yanchor="top", y=-0.05),
+                plot_bgcolor="rgba(0,0,0,0)",
+                paper_bgcolor="rgba(0,0,0,0)",
+                font=dict(family="Inter, sans-serif", size=12, color="#6b7280"),
             )
+            fig.update_traces(textinfo="percent", textfont_size=12)
             st.plotly_chart(fig, use_container_width=True)
         else:
-            st.info("No channel data available")
+            st.info("No channel data available.")
 
-    st.divider()
-
-    # Campaign table
-    st.markdown("#### Campaign Performance")
+    # ---- Campaign table ----
+    st.markdown('<div class="section-title">Top Campaigns</div>', unsafe_allow_html=True)
     if campaigns:
-        campaign_df = pd.DataFrame(campaigns)
+        camp_df = pd.DataFrame(campaigns)
         display_cols = ["name", "channel", "status", "spend", "clicks", "conversions", "ctr", "roas"]
-        available_cols = [c for c in display_cols if c in campaign_df.columns]
-
-        if available_cols:
+        available = [c for c in display_cols if c in camp_df.columns]
+        if available:
             st.dataframe(
-                campaign_df[available_cols],
+                camp_df[available],
                 hide_index=True,
                 use_container_width=True,
                 column_config={
@@ -567,105 +814,94 @@ def dashboard_page():
                     "clicks": st.column_config.NumberColumn("Clicks"),
                     "conversions": st.column_config.NumberColumn("Conversions"),
                     "ctr": st.column_config.NumberColumn("CTR", format="%.2f%%"),
-                    "roas": st.column_config.NumberColumn("ROAS", format="%.2fx"),
+                    "roas": st.column_config.NumberColumn("ROAS", format="%.1fx"),
                 },
             )
     else:
-        st.info("No campaign data available")
+        st.markdown(
+            '<div class="empty-state"><h3>No campaigns yet</h3>'
+            'Import data or connect an ad platform to see campaign performance here.</div>',
+            unsafe_allow_html=True,
+        )
 
 
-def fetch_metrics_summary(client_id: str) -> dict:
-    """Fetch metrics summary directly from the database."""
+# ---- Dashboard fallback queries (use correct Neo4j relationships) ----
+
+def _fetch_metrics_summary(client_id: str) -> dict:
     try:
         from src.graph.client import get_neo4j_client
         neo4j = get_neo4j_client()
-
-        start_date = st.session_state.date_range[0]
-        end_date = st.session_state.date_range[1]
-
+        s, e = st.session_state.date_range
         result = neo4j.execute_query("""
-            MATCH (c:Client {id: $client_id})-[:RUNS]->(camp:Campaign)-[:HAS_METRIC]->(m:Metric)
-            WHERE m.date >= date($start_date) AND m.date <= date($end_date)
+            MATCH (m:Metric)
+            WHERE m.client_id = $client_id
+              AND m.date >= date($start) AND m.date <= date($end)
             RETURN
                 sum(m.spend) as total_spend,
                 sum(m.impressions) as total_impressions,
                 sum(m.clicks) as total_clicks,
                 sum(m.conversions) as total_conversions,
-                CASE WHEN sum(m.impressions) > 0 THEN sum(m.clicks) * 100.0 / sum(m.impressions) ELSE 0 END as avg_ctr,
-                CASE WHEN sum(m.spend) > 0 THEN sum(m.revenue) / sum(m.spend) ELSE 0 END as roas
-        """, {"client_id": client_id, "start_date": start_date, "end_date": end_date})
-
-        if result:
-            return result[0]
-        return {}
-    except Exception as e:
-        st.warning(f"Could not fetch metrics: {e}")
+                CASE WHEN sum(m.impressions) > 0
+                     THEN sum(m.clicks) * 100.0 / sum(m.impressions) ELSE 0 END as avg_ctr,
+                CASE WHEN sum(m.spend) > 0
+                     THEN sum(m.revenue) / sum(m.spend) ELSE 0 END as roas
+        """, {"client_id": client_id, "start": s, "end": e})
+        return dict(result[0]) if result else {}
+    except Exception:
         return {}
 
 
-def fetch_daily_metrics(client_id: str) -> list:
-    """Fetch daily metrics from the database."""
+def _fetch_daily_metrics(client_id: str) -> list:
     try:
         from src.graph.client import get_neo4j_client
         neo4j = get_neo4j_client()
-
-        start_date = st.session_state.date_range[0]
-        end_date = st.session_state.date_range[1]
-
+        s, e = st.session_state.date_range
         result = neo4j.execute_query("""
-            MATCH (c:Client {id: $client_id})-[:RUNS]->(camp:Campaign)-[:HAS_METRIC]->(m:Metric)
-            WHERE m.date >= date($start_date) AND m.date <= date($end_date)
+            MATCH (m:Metric)
+            WHERE m.client_id = $client_id
+              AND m.date >= date($start) AND m.date <= date($end)
             RETURN
                 toString(m.date) as date,
-                sum(m.spend) as total_spend,
-                sum(m.conversions) as total_conversions
-            ORDER BY m.date
-        """, {"client_id": client_id, "start_date": start_date, "end_date": end_date})
-
+                sum(m.spend) as spend,
+                sum(m.conversions) as conversions
+            ORDER BY date
+        """, {"client_id": client_id, "start": s, "end": e})
         return [dict(r) for r in result] if result else []
-    except Exception as e:
-        st.warning(f"Could not fetch daily metrics: {e}")
+    except Exception:
         return []
 
 
-def fetch_channel_breakdown(client_id: str) -> list:
-    """Fetch channel breakdown from the database."""
+def _fetch_channel_breakdown(client_id: str) -> list:
     try:
         from src.graph.client import get_neo4j_client
         neo4j = get_neo4j_client()
-
-        start_date = st.session_state.date_range[0]
-        end_date = st.session_state.date_range[1]
-
+        s, e = st.session_state.date_range
         result = neo4j.execute_query("""
-            MATCH (c:Client {id: $client_id})-[:RUNS]->(camp:Campaign)-[:ADVERTISES_ON]->(ch:Channel)
-            MATCH (camp)-[:HAS_METRIC]->(m:Metric)
-            WHERE m.date >= date($start_date) AND m.date <= date($end_date)
+            MATCH (c:Client {id: $client_id})-[:OWNS]->(camp:Campaign)-[:RUNS_ON]->(ch:Channel)
+            OPTIONAL MATCH (m:Metric)
+            WHERE m.entity_id = camp.id
+              AND m.date >= date($start) AND m.date <= date($end)
             RETURN
                 ch.name as channel,
-                sum(m.spend) as total_spend,
-                sum(m.conversions) as total_conversions
-        """, {"client_id": client_id, "start_date": start_date, "end_date": end_date})
-
+                sum(m.spend) as spend,
+                sum(m.conversions) as conversions
+        """, {"client_id": client_id, "start": s, "end": e})
         return [dict(r) for r in result] if result else []
-    except Exception as e:
-        st.warning(f"Could not fetch channel data: {e}")
+    except Exception:
         return []
 
 
-def fetch_campaigns(client_id: str) -> list:
-    """Fetch campaign data from the database."""
+def _fetch_campaigns(client_id: str) -> list:
     try:
         from src.graph.client import get_neo4j_client
         neo4j = get_neo4j_client()
-
-        start_date = st.session_state.date_range[0]
-        end_date = st.session_state.date_range[1]
-
+        s, e = st.session_state.date_range
         result = neo4j.execute_query("""
-            MATCH (c:Client {id: $client_id})-[:RUNS]->(camp:Campaign)-[:ADVERTISES_ON]->(ch:Channel)
-            OPTIONAL MATCH (camp)-[:HAS_METRIC]->(m:Metric)
-            WHERE m.date >= date($start_date) AND m.date <= date($end_date)
+            MATCH (c:Client {id: $client_id})-[:OWNS]->(camp:Campaign)
+            OPTIONAL MATCH (camp)-[:RUNS_ON]->(ch:Channel)
+            OPTIONAL MATCH (m:Metric)
+            WHERE m.entity_id = camp.id
+              AND m.date >= date($start) AND m.date <= date($end)
             RETURN
                 camp.name as name,
                 ch.name as channel,
@@ -673,364 +909,450 @@ def fetch_campaigns(client_id: str) -> list:
                 sum(m.spend) as spend,
                 sum(m.clicks) as clicks,
                 sum(m.conversions) as conversions,
-                CASE WHEN sum(m.impressions) > 0 THEN sum(m.clicks) * 100.0 / sum(m.impressions) ELSE 0 END as ctr,
-                CASE WHEN sum(m.spend) > 0 THEN sum(m.revenue) / sum(m.spend) ELSE 0 END as roas
+                CASE WHEN sum(m.impressions) > 0
+                     THEN sum(m.clicks) * 100.0 / sum(m.impressions) ELSE 0 END as ctr,
+                CASE WHEN sum(m.spend) > 0
+                     THEN sum(m.revenue) / sum(m.spend) ELSE 0 END as roas
             ORDER BY spend DESC
             LIMIT 20
-        """, {"client_id": client_id, "start_date": start_date, "end_date": end_date})
-
+        """, {"client_id": client_id, "start": s, "end": e})
         return [dict(r) for r in result] if result else []
-    except Exception as e:
-        st.warning(f"Could not fetch campaigns: {e}")
+    except Exception:
         return []
 
 
-def reports_page():
-    """Render reports generation page."""
-    st.markdown('<h1 class="main-header">Reports</h1>', unsafe_allow_html=True)
+# ---------------------------------------------------------------------------
+# ASK (Natural Language Query)
+# ---------------------------------------------------------------------------
+
+def ask_page():
+    """Conversational query interface with marketing-friendly language."""
+    st.markdown('<div class="page-header">Ask a question</div>', unsafe_allow_html=True)
 
     if not st.session_state.selected_client:
-        st.warning("Please select a client from the sidebar")
+        st.markdown(
+            '<div class="page-desc">Select an account from the sidebar, then ask anything about your marketing performance.</div>',
+            unsafe_allow_html=True,
+        )
         return
 
-    client_name = st.session_state.selected_client["name"]
-    client_id = st.session_state.selected_client["id"]
+    client = st.session_state.selected_client
+    st.markdown(
+        f'<div class="page-desc">Ask anything about <strong>{client["name"]}</strong>\'s campaigns, spend, or performance.</div>',
+        unsafe_allow_html=True,
+    )
 
-    tab1, tab2 = st.tabs(["Generate Report", "Scheduled Reports"])
+    # Suggestions (only when chat is empty)
+    if not st.session_state.chat_history:
+        suggestions = [
+            "Which campaign had the best return last month?",
+            "How is our spend split across channels?",
+            "What trends do you see in our conversion rate?",
+            "Which ads should we pause to save budget?",
+        ]
+        pills_html = "".join(
+            f'<span class="suggestion-pill">{s}</span>' for s in suggestions
+        )
+        st.markdown(
+            f'<div style="margin-bottom:1.5rem">'
+            f'<div style="font-size:0.8rem;font-weight:500;color:#9ca3af;margin-bottom:0.5rem">Try asking</div>'
+            f'{pills_html}</div>',
+            unsafe_allow_html=True,
+        )
 
+    # Chat history
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+            # Confidence
+            if msg.get("confidence"):
+                conf = msg["confidence"]
+                level = conf.get("level", "medium")
+                overall = conf.get("overall", 0)
+                label_map = {"high": "High confidence", "medium": "Moderate confidence", "low": "Low confidence"}
+                st.markdown(
+                    f'<span class="conf-badge conf-{level}">{label_map.get(level, level)} &middot; {overall:.0%}</span>',
+                    unsafe_allow_html=True,
+                )
+
+            # Sources
+            if msg.get("sources"):
+                with st.expander("View sources"):
+                    for src in msg["sources"]:
+                        name = src.get("entity_name", src.get("entity_id", ""))
+                        etype = src.get("entity_type", "")
+                        dr = src.get("date_range", "")
+                        st.markdown(f'<span class="source-tag">{etype}: {name} ({dr})</span>', unsafe_allow_html=True)
+
+            # Recommendations
+            if msg.get("recommendations"):
+                with st.expander("Suggested next steps"):
+                    for rec in msg["recommendations"]:
+                        st.markdown(f"- {rec}")
+
+    # Input
+    query = st.chat_input("Ask about campaigns, performance, spend, trends...")
+
+    if query:
+        st.session_state.chat_history.append({"role": "user", "content": query})
+        with st.spinner("Analyzing your data..."):
+            response = api_request(
+                "POST", "/query",
+                json={
+                    "query": query,
+                    "client_id": client["id"],
+                    "session_id": st.session_state.session_id,
+                    "date_range": st.session_state.date_range,
+                },
+            )
+        if response and response.status_code == 200:
+            data = response.json()
+            st.session_state.chat_history.append({
+                "role": "assistant",
+                "content": data["answer"],
+                "sources": data.get("sources", []),
+                "confidence": data.get("confidence"),
+                "recommendations": data.get("recommendations"),
+            })
+        else:
+            err = "Something went wrong. Please try rephrasing your question."
+            if response:
+                err = response.json().get("detail", err)
+            st.session_state.chat_history.append({"role": "assistant", "content": err})
+        st.rerun()
+
+    # Clear button
+    if st.session_state.chat_history:
+        if st.button("Clear conversation"):
+            st.session_state.chat_history = []
+            st.session_state.session_id = str(uuid4())
+            st.rerun()
+
+
+# ---------------------------------------------------------------------------
+# REPORTS
+# ---------------------------------------------------------------------------
+
+def reports_page():
+    """Report generation and scheduling."""
+    st.markdown('<div class="page-header">Reports</div>', unsafe_allow_html=True)
+
+    if not st.session_state.selected_client:
+        st.markdown('<div class="page-desc">Select an account to generate or schedule reports.</div>', unsafe_allow_html=True)
+        return
+
+    client = st.session_state.selected_client
+    client_id = client["id"]
+    st.markdown(f'<div class="page-desc">Generate and schedule reports for <strong>{client["name"]}</strong>.</div>', unsafe_allow_html=True)
+
+    tab1, tab2 = st.tabs(["Generate", "Schedules"])
+
+    # ---- Generate ----
     with tab1:
-        st.markdown(f"### Generate Report for {client_name}")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            report_type = st.selectbox(
-                "Report Type",
-                ["Monthly", "Weekly", "Daily", "Quarterly", "Custom"],
-            )
-
-            format_option = st.selectbox(
-                "Format",
-                ["PDF", "Excel", "CSV"],
-            )
-
-        with col2:
+        c1, c2 = st.columns(2)
+        with c1:
+            report_type = st.selectbox("Report type", ["Monthly", "Weekly", "Daily", "Quarterly", "Custom"])
+            format_option = st.selectbox("File format", ["PDF", "Excel", "CSV"])
+        with c2:
             sections = st.multiselect(
-                "Sections",
+                "Include sections",
                 ["Summary", "Campaigns", "Ad Sets", "Trends", "Recommendations", "Channel Breakdown"],
                 default=["Summary", "Campaigns", "Trends", "Recommendations"],
             )
+            compare = st.checkbox("Compare with previous period", value=True)
 
-            include_comparison = st.checkbox("Compare to previous period", value=True)
-
-        st.divider()
-
-        if st.button("Generate Report", type="primary", use_container_width=True):
+        if st.button("Generate report", type="primary", use_container_width=True):
+            section_map = {
+                "Summary": "summary", "Campaigns": "campaigns", "Ad Sets": "ad_sets",
+                "Trends": "trends", "Recommendations": "recommendations",
+                "Channel Breakdown": "channel_breakdown",
+            }
             with st.spinner("Generating report..."):
-                section_map = {
-                    "Summary": "summary",
-                    "Campaigns": "campaigns",
-                    "Ad Sets": "ad_sets",
-                    "Trends": "trends",
-                    "Recommendations": "recommendations",
-                    "Channel Breakdown": "channel_breakdown",
-                }
-
-                response = api_request(
-                    "POST",
-                    "/reports",
-                    json={
-                        "client_id": client_id,
-                        "report_type": report_type.lower(),
-                        "format": format_option.lower(),
-                        "date_range": {
-                            "start": st.session_state.date_range[0],
-                            "end": st.session_state.date_range[1],
-                        },
-                        "sections": [section_map[s] for s in sections],
-                        "include_recommendations": "Recommendations" in sections,
-                        "compare_to_previous": include_comparison,
-                    },
-                )
-
-                if response and response.status_code == 202:
-                    data = response.json()
-                    st.success(f"Report generation started. Report ID: {data['report_id']}")
-                else:
-                    st.error("Failed to generate report")
-
-        st.divider()
-
-        # Recent reports list
-        st.markdown("### Recent Reports")
-
-        response = api_request("GET", f"/reports?client_id={client_id}")
-
-        if response and response.status_code == 200:
-            reports = response.json().get("reports", [])
-
-            if reports:
-                for report in reports[:10]:
-                    col1, col2, col3, col4 = st.columns([3, 1, 1, 1])
-                    with col1:
-                        st.markdown(
-                            f"**{report['report_type'].title()}** - "
-                            f"{report['date_range']['start']} to {report['date_range']['end']}"
-                        )
-                    with col2:
-                        st.markdown(f"`{report['format'].upper()}`")
-                    with col3:
-                        status_colors = {
-                            "completed": "green",
-                            "generating": "orange",
-                            "pending": "gray",
-                            "failed": "red",
-                        }
-                        st.markdown(
-                            f":{status_colors.get(report['status'], 'gray')}[{report['status'].upper()}]"
-                        )
-                    with col4:
-                        if report["status"] == "completed" and report.get("download_url"):
-                            st.markdown(f"[Download]({API_BASE_URL}{report['download_url']})")
+                resp = api_request("POST", "/reports", json={
+                    "client_id": client_id,
+                    "report_type": report_type.lower(),
+                    "format": format_option.lower(),
+                    "date_range": {"start": st.session_state.date_range[0], "end": st.session_state.date_range[1]},
+                    "sections": [section_map[s] for s in sections],
+                    "include_recommendations": "Recommendations" in sections,
+                    "compare_to_previous": compare,
+                })
+            if resp and resp.status_code == 202:
+                st.success(f"Report queued. ID: {resp.json()['report_id']}")
             else:
-                st.info("No reports generated yet")
+                st.error("Failed to generate report. Please try again.")
+
+        # Recent reports
+        st.markdown('<div class="section-title">Recent Reports</div>', unsafe_allow_html=True)
+        resp = api_request("GET", f"/reports?client_id={client_id}")
+        if resp and resp.status_code == 200:
+            reports = resp.json().get("reports", [])
+            if reports:
+                for r in reports[:10]:
+                    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
+                    with c1:
+                        st.markdown(f"**{r['report_type'].title()}** &mdash; {r['date_range']['start']} to {r['date_range']['end']}")
+                    with c2:
+                        st.markdown(f"`{r['format'].upper()}`")
+                    with c3:
+                        status_cls = {"completed": "status-active", "generating": "status-paused", "failed": "status-error"}.get(r["status"], "status-paused")
+                        st.markdown(f'<span class="{status_cls}">{r["status"].title()}</span>', unsafe_allow_html=True)
+                    with c4:
+                        if r["status"] == "completed" and r.get("download_url"):
+                            st.markdown(f"[Download]({API_BASE_URL}{r['download_url']})")
+            else:
+                st.info("No reports generated yet.")
         else:
-            st.error("Failed to load reports")
+            st.warning("Could not load reports.")
 
+    # ---- Schedules ----
     with tab2:
-        st.markdown("### Schedule Automated Reports")
-        st.info("Set up reports to be automatically generated and sent to your email.")
+        st.markdown("Set up reports to be automatically generated and delivered to your inbox.")
 
-        with st.form("schedule_report_form"):
-            col1, col2 = st.columns(2)
-            with col1:
-                schedule_type = st.selectbox(
-                    "Frequency",
-                    ["Daily", "Weekly", "Monthly"],
-                )
-                report_format = st.selectbox(
-                    "Format",
-                    ["PDF", "Excel"],
-                    key="schedule_format"
-                )
-            with col2:
-                email = st.text_input("Email Address", placeholder="reports@company.com")
-                time_of_day = st.time_input("Delivery Time", value=datetime.strptime("09:00", "%H:%M").time())
+        with st.form("schedule_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                freq = st.selectbox("Frequency", ["daily", "weekly", "monthly"], format_func=str.title)
+                fmt = st.selectbox("Format", ["pdf", "excel"], format_func=str.upper, key="sched_fmt")
+            with c2:
+                email = st.text_input("Delivery email", placeholder="reports@company.com")
+                time_val = st.time_input("Delivery time", value=datetime.strptime("09:00", "%H:%M").time())
 
-            schedule_submitted = st.form_submit_button("Create Schedule", use_container_width=True)
-
-            if schedule_submitted:
+            if st.form_submit_button("Create schedule", use_container_width=True):
                 if email:
-                    st.success(f"Report schedule created! {schedule_type} {report_format} reports will be sent to {email}")
+                    resp = api_request("POST", "/schedules/reports", json={
+                        "client_id": client_id, "frequency": freq,
+                        "report_type": "monthly", "format": fmt,
+                        "email": email, "time_of_day": time_val.strftime("%H:%M"),
+                    })
+                    if resp and resp.status_code == 201:
+                        st.success(f"Schedule created. {freq.title()} reports will be sent to {email}.")
+                    else:
+                        detail = resp.json().get("detail", "Unknown error") if resp else "Connection error"
+                        st.error(f"Could not create schedule: {detail}")
                 else:
-                    st.error("Please enter an email address")
+                    st.warning("Please enter an email address.")
+
+        st.markdown('<div class="section-title">Active Schedules</div>', unsafe_allow_html=True)
+        sched_resp = api_request("GET", f"/schedules/reports?client_id={client_id}")
+        if sched_resp and sched_resp.status_code == 200:
+            schedules = sched_resp.json()
+            if schedules:
+                for s in schedules:
+                    c1, c2, c3, c4 = st.columns([3, 1, 1, 1])
+                    with c1:
+                        st.markdown(f"**{s['frequency'].title()}** to {s['email']} at {s.get('time_of_day', '09:00')}")
+                    with c2:
+                        st.markdown(f"`{s.get('format', 'pdf').upper()}`")
+                    with c3:
+                        badge = "status-active" if s.get("enabled") else "status-paused"
+                        label = "Active" if s.get("enabled") else "Paused"
+                        st.markdown(f'<span class="{badge}">{label}</span>', unsafe_allow_html=True)
+                    with c4:
+                        if st.button("Remove", key=f"del_{s['id']}"):
+                            api_request("DELETE", f"/schedules/reports/{s['id']}")
+                            st.rerun()
+            else:
+                st.info("No schedules for this account.")
+        else:
+            st.info("No schedules found.")
 
 
-def data_import_page():
-    """Render enhanced data import page."""
-    st.markdown('<h1 class="main-header">Data Import</h1>', unsafe_allow_html=True)
+# ---------------------------------------------------------------------------
+# DATA SOURCES
+# ---------------------------------------------------------------------------
+
+def data_sources_page():
+    """Data import, platform connections, and templates."""
+    st.markdown('<div class="page-header">Data Sources</div>', unsafe_allow_html=True)
 
     if not st.session_state.selected_client:
-        st.warning("Please select a client from the sidebar")
+        st.markdown('<div class="page-desc">Select an account to import data or connect ad platforms.</div>', unsafe_allow_html=True)
         return
 
-    client_name = st.session_state.selected_client["name"]
-    client_id = st.session_state.selected_client["id"]
+    client = st.session_state.selected_client
+    client_id = client["id"]
+    st.markdown(
+        f'<div class="page-desc">Import data or connect ad platforms for <strong>{client["name"]}</strong>.</div>',
+        unsafe_allow_html=True,
+    )
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Upload File", "Connect APIs", "Templates", "Import History"])
+    tab1, tab2, tab3 = st.tabs(["Upload File", "Connect Platforms", "Templates"])
 
+    # ---- Upload ----
     with tab1:
-        st.markdown(f"### Upload Data for {client_name}")
+        file_format = st.radio("File format", ["CSV", "Excel", "JSON"], horizontal=True)
+        ext_map = {"CSV": ["csv"], "Excel": ["xlsx", "xls"], "JSON": ["json"]}
+        uploaded = st.file_uploader(f"Choose a {file_format} file", type=ext_map[file_format], help="Campaign or metrics data")
 
-        # File format selection
-        file_format = st.radio(
-            "Select file format",
-            ["CSV", "Excel (.xlsx)", "JSON"],
-            horizontal=True,
-        )
-
-        # Map format to file types
-        format_map = {
-            "CSV": ["csv"],
-            "Excel (.xlsx)": ["xlsx", "xls"],
-            "JSON": ["json"],
-        }
-
-        uploaded_file = st.file_uploader(
-            f"Choose a {file_format} file",
-            type=format_map[file_format],
-            help="Upload campaign or metrics data",
-        )
-
-        if uploaded_file is not None:
-            # Read file based on format
+        if uploaded is not None:
             try:
                 if file_format == "CSV":
-                    df = pd.read_csv(uploaded_file)
-                elif file_format == "Excel (.xlsx)":
-                    df = pd.read_excel(uploaded_file)
-                else:  # JSON
-                    df = pd.read_json(uploaded_file)
+                    df = pd.read_csv(uploaded)
+                elif file_format == "Excel":
+                    df = pd.read_excel(uploaded)
+                else:
+                    df = pd.read_json(uploaded)
 
-                st.success(f"File loaded: {len(df)} rows, {len(df.columns)} columns")
-
-                # Data preview
-                st.markdown("#### Data Preview")
+                st.success(f"Loaded {len(df)} rows and {len(df.columns)} columns")
                 st.dataframe(df.head(10), use_container_width=True)
 
                 # Column mapping
-                st.markdown("#### Column Mapping")
-                st.info("Map your file columns to the expected data fields")
+                st.markdown('<div class="section-title">Map your columns</div>', unsafe_allow_html=True)
 
-                col1, col2 = st.columns(2)
+                detected = "metrics" if "impressions" in [c.lower() for c in df.columns] else "campaigns"
+                data_type = st.selectbox("Data type", ["Campaigns", "Metrics"], index=0 if detected == "campaigns" else 1)
 
-                # Detect data type
-                detected_type = "metrics" if "impressions" in df.columns.str.lower().tolist() else "campaigns"
-
-                with col1:
-                    data_type = st.selectbox(
-                        "Data Type",
-                        ["Campaigns", "Metrics"],
-                        index=0 if detected_type == "campaigns" else 1,
-                    )
-
-                expected_cols = {
+                expected = {
                     "Campaigns": ["name", "objective", "start_date", "end_date", "budget", "channel"],
                     "Metrics": ["campaign_id", "date", "impressions", "clicks", "conversions", "spend", "revenue"],
                 }
 
-                with col2:
-                    st.markdown("**Expected columns:**")
-                    st.caption(", ".join(expected_cols[data_type]))
-
-                # Column mapping interface
-                st.markdown("#### Map Columns")
                 mapping = {}
-                cols = st.columns(3)
-                for i, expected_col in enumerate(expected_cols[data_type]):
-                    with cols[i % 3]:
-                        # Try to auto-match columns
+                cols_ui = st.columns(3)
+                for i, exp_col in enumerate(expected[data_type]):
+                    with cols_ui[i % 3]:
+                        options = ["-- Skip --"] + list(df.columns)
                         default_idx = 0
-                        file_cols = ["-- Skip --"] + list(df.columns)
-                        for j, fc in enumerate(file_cols):
-                            if fc.lower().replace("_", "") == expected_col.lower().replace("_", ""):
+                        for j, o in enumerate(options):
+                            if o.lower().replace("_", "") == exp_col.lower().replace("_", ""):
                                 default_idx = j
                                 break
+                        mapping[exp_col] = st.selectbox(exp_col, options, index=default_idx, key=f"map_{exp_col}")
 
-                        mapping[expected_col] = st.selectbox(
-                            f"{expected_col}",
-                            file_cols,
-                            index=default_idx,
-                            key=f"map_{expected_col}",
-                        )
-
-                # Data validation
-                st.markdown("#### Validation")
-                validation_errors = []
-                validation_warnings = []
-
-                # Check required columns are mapped
+                # Validation
                 required = ["name", "channel"] if data_type == "Campaigns" else ["date", "impressions", "spend"]
-                for req in required:
-                    if mapping.get(req) == "-- Skip --":
-                        validation_errors.append(f"Required column '{req}' is not mapped")
+                errors = [f"'{r}' must be mapped" for r in required if mapping.get(r) == "-- Skip --"]
 
-                # Check data types
-                if data_type == "Metrics":
-                    if mapping.get("date") and mapping["date"] != "-- Skip --":
-                        try:
-                            pd.to_datetime(df[mapping["date"]])
-                        except:
-                            validation_errors.append("Date column contains invalid dates")
-
-                    numeric_cols = ["impressions", "clicks", "conversions", "spend", "revenue"]
-                    for nc in numeric_cols:
-                        if mapping.get(nc) and mapping[nc] != "-- Skip --":
-                            if not pd.api.types.is_numeric_dtype(df[mapping[nc]]):
-                                validation_warnings.append(f"Column '{mapping[nc]}' may not be numeric")
-
-                if validation_errors:
-                    for err in validation_errors:
-                        st.error(err)
-                elif validation_warnings:
-                    for warn in validation_warnings:
-                        st.warning(warn)
-                    st.info("Warnings detected but you can still proceed")
+                if errors:
+                    for e in errors:
+                        st.error(e)
                 else:
-                    st.success("Validation passed!")
+                    st.success("Validation passed")
 
-                # Upload button
-                if st.button("Upload Data", type="primary", disabled=bool(validation_errors)):
-                    with st.spinner("Uploading data..."):
-                        # Rename columns based on mapping
-                        rename_map = {v: k for k, v in mapping.items() if v != "-- Skip --"}
-                        upload_df = df.rename(columns=rename_map)
-
-                        # Convert to CSV for upload
-                        csv_buffer = io.StringIO()
-                        upload_df.to_csv(csv_buffer, index=False)
-                        csv_buffer.seek(0)
-
-                        response = api_request(
-                            "POST",
-                            f"/ingest/csv/{client_id}",
-                            files={"file": ("data.csv", csv_buffer.getvalue(), "text/csv")},
+                if st.button("Upload data", type="primary", disabled=bool(errors)):
+                    with st.spinner("Uploading..."):
+                        rename = {v: k for k, v in mapping.items() if v != "-- Skip --"}
+                        buf = io.StringIO()
+                        df.rename(columns=rename).to_csv(buf, index=False)
+                        buf.seek(0)
+                        resp = api_request(
+                            "POST", f"/ingest/csv/{client_id}",
+                            files={"file": ("data.csv", buf.getvalue(), "text/csv")},
                         )
-
-                        if response and response.status_code == 200:
-                            result = response.json()
-                            st.success(f"Successfully uploaded {result.get('rows_processed', 0)} rows!")
-                        else:
-                            st.error("Failed to upload data")
-
+                    if resp and resp.status_code == 200:
+                        st.success(f"Uploaded {resp.json().get('rows_processed', 0)} rows.")
+                    else:
+                        st.error("Upload failed. Please check your file and try again.")
             except Exception as e:
-                st.error(f"Error reading file: {e}")
+                st.error(f"Could not read file: {e}")
 
+    # ---- Connect Platforms ----
     with tab2:
-        st.markdown("### Connect Ad Platforms")
-        st.info("Connect your advertising accounts to automatically sync data")
+        conn_resp = api_request("GET", "/connections")
+        connections = {}
+        if conn_resp and conn_resp.status_code == 200:
+            for c in conn_resp.json().get("connections", []):
+                connections[c["platform"]] = c
 
-        col1, col2 = st.columns(2)
+        c1, c2 = st.columns(2)
 
-        with col1:
-            st.markdown("#### Google Ads")
-            st.markdown("Connect your Google Ads account for automatic data sync")
+        # Google Ads
+        with c1:
+            g = connections.get("google_ads", {})
+            connected = g.get("connected", False)
+            card_cls = "platform-card connected" if connected else "platform-card"
+            st.markdown(f'<div class="{card_cls}"><div class="platform-name">Google Ads</div></div>', unsafe_allow_html=True)
 
-            google_status = "Not Connected"
-            if st.button("Connect Google Ads", key="connect_google"):
-                st.info("Google Ads OAuth flow would open here. Configure GOOGLE_ADS_* in .env")
+            if connected:
+                st.markdown(f'<span class="status-active">Connected</span>', unsafe_allow_html=True)
+                if g.get("last_sync"):
+                    st.caption(f"Last sync: {g['last_sync']}")
+                if st.button("Disconnect", key="disc_g"):
+                    api_request("DELETE", "/connections/google_ads")
+                    st.rerun()
+            else:
+                if st.button("Connect via OAuth", key="oauth_g"):
+                    resp = api_request("GET", "/connections/google-ads/auth-url")
+                    if resp and resp.status_code == 200:
+                        st.markdown(f"[Authorize Google Ads]({resp.json()['auth_url']})")
+                    else:
+                        detail = resp.json().get("detail", "") if resp else ""
+                        st.warning(f"OAuth unavailable. {detail}")
 
-            st.caption(f"Status: {google_status}")
+                with st.expander("Enter credentials manually"):
+                    with st.form("g_manual"):
+                        g_dev = st.text_input("Developer Token", type="password")
+                        g_cid = st.text_input("Client ID")
+                        g_sec = st.text_input("Client Secret", type="password")
+                        g_ref = st.text_input("Refresh Token", type="password")
+                        g_lid = st.text_input("Login Customer ID")
+                        if st.form_submit_button("Save"):
+                            creds = {k: v for k, v in {
+                                "developer_token": g_dev, "client_id": g_cid,
+                                "client_secret": g_sec, "refresh_token": g_ref,
+                                "login_customer_id": g_lid,
+                            }.items() if v}
+                            if creds:
+                                resp = api_request("POST", "/connections/manual", json={"platform": "google_ads", "credentials": creds})
+                                if resp and resp.status_code == 200:
+                                    st.success("Saved")
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to save credentials")
+                            else:
+                                st.warning("Enter at least one credential")
 
-        with col2:
-            st.markdown("#### Meta (Facebook/Instagram)")
-            st.markdown("Connect your Meta Business account for automatic data sync")
+        # Meta
+        with c2:
+            m = connections.get("meta", {})
+            connected = m.get("connected", False)
+            card_cls = "platform-card connected" if connected else "platform-card"
+            st.markdown(f'<div class="{card_cls}"><div class="platform-name">Meta (Facebook / Instagram)</div></div>', unsafe_allow_html=True)
 
-            meta_status = "Not Connected"
-            if st.button("Connect Meta Ads", key="connect_meta"):
-                st.info("Meta OAuth flow would open here. Configure META_* in .env")
+            if connected:
+                st.markdown(f'<span class="status-active">Connected</span>', unsafe_allow_html=True)
+                if m.get("last_sync"):
+                    st.caption(f"Last sync: {m['last_sync']}")
+                if st.button("Disconnect", key="disc_m"):
+                    api_request("DELETE", "/connections/meta")
+                    st.rerun()
+            else:
+                if st.button("Connect via OAuth", key="oauth_m"):
+                    resp = api_request("GET", "/connections/meta/auth-url")
+                    if resp and resp.status_code == 200:
+                        st.markdown(f"[Authorize Meta Ads]({resp.json()['auth_url']})")
+                    else:
+                        detail = resp.json().get("detail", "") if resp else ""
+                        st.warning(f"OAuth unavailable. {detail}")
 
-            st.caption(f"Status: {meta_status}")
+                with st.expander("Enter credentials manually"):
+                    with st.form("m_manual"):
+                        m_aid = st.text_input("App ID")
+                        m_sec = st.text_input("App Secret", type="password")
+                        m_tok = st.text_input("Access Token", type="password")
+                        if st.form_submit_button("Save"):
+                            creds = {k: v for k, v in {
+                                "app_id": m_aid, "app_secret": m_sec, "access_token": m_tok,
+                            }.items() if v}
+                            if creds:
+                                resp = api_request("POST", "/connections/manual", json={"platform": "meta", "credentials": creds})
+                                if resp and resp.status_code == 200:
+                                    st.success("Saved")
+                                    st.rerun()
+                                else:
+                                    st.error("Failed to save credentials")
+                            else:
+                                st.warning("Enter at least one credential")
 
-        st.divider()
-
-        st.markdown("#### Sync Settings")
-        sync_frequency = st.selectbox(
-            "Auto-sync Frequency",
-            ["Every 6 hours", "Every 12 hours", "Daily", "Manual only"],
-        )
-        if st.button("Save Sync Settings"):
-            st.success("Sync settings saved!")
-
+    # ---- Templates ----
     with tab3:
-        st.markdown("### Download Templates")
-        st.info("Download CSV templates with the correct column structure")
-
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("#### Campaign Template")
-            campaign_template = pd.DataFrame({
+        st.markdown("Download pre-formatted templates, fill them with your data, then upload.")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown('<div class="section-title">Campaign Template</div>', unsafe_allow_html=True)
+            tpl = pd.DataFrame({
                 "name": ["Summer Sale Campaign", "Brand Awareness"],
                 "objective": ["conversions", "awareness"],
                 "start_date": ["2024-01-01", "2024-01-15"],
@@ -1038,18 +1360,11 @@ def data_import_page():
                 "budget": [5000.00, 3000.00],
                 "channel": ["google_ads", "meta"],
             })
-            csv = campaign_template.to_csv(index=False)
-            st.download_button(
-                "Download Campaign Template",
-                csv,
-                "campaign_template.csv",
-                "text/csv",
-                use_container_width=True,
-            )
+            st.download_button("Download campaign template", tpl.to_csv(index=False), "campaign_template.csv", "text/csv", use_container_width=True)
 
-        with col2:
-            st.markdown("#### Metrics Template")
-            metrics_template = pd.DataFrame({
+        with c2:
+            st.markdown('<div class="section-title">Metrics Template</div>', unsafe_allow_html=True)
+            tpl = pd.DataFrame({
                 "campaign_id": ["camp_001", "camp_001", "camp_002"],
                 "date": ["2024-01-01", "2024-01-02", "2024-01-01"],
                 "impressions": [10000, 12000, 8000],
@@ -1057,128 +1372,79 @@ def data_import_page():
                 "conversions": [25, 30, 15],
                 "spend": [150.00, 180.00, 100.00],
                 "revenue": [500.00, 600.00, 300.00],
-                "currency": ["USD", "USD", "USD"],
             })
-            csv = metrics_template.to_csv(index=False)
-            st.download_button(
-                "Download Metrics Template",
-                csv,
-                "metrics_template.csv",
-                "text/csv",
-                use_container_width=True,
-            )
-
-    with tab4:
-        st.markdown("### Import History")
-
-        # This would normally come from the database
-        import_history = [
-            {"date": "2024-01-28 10:30", "file": "january_metrics.csv", "rows": 450, "status": "Success"},
-            {"date": "2024-01-25 14:15", "file": "campaigns.xlsx", "rows": 12, "status": "Success"},
-            {"date": "2024-01-20 09:00", "file": "data.json", "rows": 0, "status": "Failed - Invalid format"},
-        ]
-
-        if import_history:
-            history_df = pd.DataFrame(import_history)
-            st.dataframe(history_df, hide_index=True, use_container_width=True)
-        else:
-            st.info("No import history available")
+            st.download_button("Download metrics template", tpl.to_csv(index=False), "metrics_template.csv", "text/csv", use_container_width=True)
 
 
-def admin_page():
-    """Render admin panel for system management."""
-    st.markdown('<h1 class="main-header">Admin Panel</h1>', unsafe_allow_html=True)
+# ---------------------------------------------------------------------------
+# SETTINGS (Admin)
+# ---------------------------------------------------------------------------
+
+def settings_page():
+    """Admin settings: clients, users, system health, audit."""
+    st.markdown('<div class="page-header">Settings</div>', unsafe_allow_html=True)
 
     if st.session_state.user.get("role") != "admin":
-        st.error("Access denied. Admin privileges required.")
+        st.error("You don't have permission to access this page.")
         return
 
-    tab1, tab2, tab3, tab4 = st.tabs(["Clients", "Users", "System", "Audit Log"])
+    st.markdown('<div class="page-desc">Manage accounts, team members, and system configuration.</div>', unsafe_allow_html=True)
 
+    tab1, tab2, tab3, tab4 = st.tabs(["Accounts", "Team", "System", "Activity"])
+
+    # ---- Accounts ----
     with tab1:
-        st.markdown("### Client Management")
-
-        col1, col2 = st.columns([2, 1])
-
-        with col1:
-            # List existing clients
-            response = api_request("GET", "/ingest/clients")
-            if response and response.status_code == 200:
-                clients = response.json().get("clients", [])
-
-                # Remove duplicates by name
-                seen_names = set()
-                unique_clients = []
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            resp = api_request("GET", "/ingest/clients")
+            if resp and resp.status_code == 200:
+                clients = resp.json().get("clients", [])
+                seen = set()
+                unique = []
                 for c in clients:
-                    if c["name"] not in seen_names:
-                        seen_names.add(c["name"])
-                        unique_clients.append(c)
-
-                if unique_clients:
-                    client_df = pd.DataFrame(unique_clients)
-                    display_cols = ["name", "industry", "budget", "budget_currency", "status"]
-                    available_cols = [c for c in display_cols if c in client_df.columns]
-
-                    st.dataframe(
-                        client_df[available_cols],
-                        hide_index=True,
-                        use_container_width=True,
-                        column_config={
-                            "name": st.column_config.TextColumn("Client Name"),
-                            "industry": st.column_config.TextColumn("Industry"),
-                            "budget": st.column_config.NumberColumn("Budget", format="$%.0f"),
-                            "budget_currency": st.column_config.TextColumn("Currency"),
-                            "status": st.column_config.TextColumn("Status"),
-                        },
-                    )
+                    if c["name"] not in seen:
+                        seen.add(c["name"])
+                        unique.append(c)
+                if unique:
+                    cdf = pd.DataFrame(unique)
+                    show = [c for c in ["name", "industry", "budget", "budget_currency", "status"] if c in cdf.columns]
+                    st.dataframe(cdf[show], hide_index=True, use_container_width=True, column_config={
+                        "name": st.column_config.TextColumn("Account"),
+                        "industry": st.column_config.TextColumn("Industry"),
+                        "budget": st.column_config.NumberColumn("Budget", format="$%.0f"),
+                        "budget_currency": st.column_config.TextColumn("Currency"),
+                        "status": st.column_config.TextColumn("Status"),
+                    })
                 else:
-                    st.info("No clients found")
+                    st.info("No accounts yet.")
 
-        with col2:
-            st.markdown("#### Add New Client")
-            with st.form("add_client_form"):
-                client_name = st.text_input("Client Name", placeholder="Acme Corp")
-                industry = st.selectbox(
-                    "Industry",
-                    ["E-commerce", "Retail", "Healthcare", "Finance", "SaaS", "Travel", "Other"],
-                )
-                budget = st.number_input("Monthly Budget", min_value=0, value=10000)
+        with c2:
+            st.markdown('<div class="section-title">Add Account</div>', unsafe_allow_html=True)
+            with st.form("add_client"):
+                name = st.text_input("Account name", placeholder="Acme Corp")
+                industry = st.selectbox("Industry", ["E-commerce", "Retail", "Healthcare", "Finance", "SaaS", "Travel", "Other"])
+                budget = st.number_input("Monthly budget", min_value=0, value=10000)
                 currency = st.selectbox("Currency", ["USD", "EUR", "GBP"])
-
-                if st.form_submit_button("Add Client", use_container_width=True):
-                    if client_name:
-                        response = api_request(
-                            "POST",
-                            "/ingest/clients",
-                            json={
-                                "name": client_name,
-                                "industry": industry,
-                                "budget": budget,
-                                "budget_currency": currency,
-                                "data_retention_days": 365,
-                            },
-                        )
-                        if response and response.status_code == 201:
-                            st.success(f"Client '{client_name}' created!")
+                if st.form_submit_button("Add account", use_container_width=True):
+                    if name:
+                        resp = api_request("POST", "/ingest/clients", json={
+                            "name": name, "industry": industry,
+                            "budget": budget, "budget_currency": currency,
+                            "data_retention_days": 365,
+                        })
+                        if resp and resp.status_code == 201:
+                            st.success(f"Account '{name}' created.")
                             st.rerun()
                         else:
-                            error_msg = "Failed to create client"
-                            if response:
-                                error_msg = response.json().get("detail", error_msg)
-                            st.error(error_msg)
+                            st.error(resp.json().get("detail", "Failed to create account") if resp else "Connection error")
                     else:
-                        st.error("Please enter a client name")
+                        st.warning("Please enter an account name.")
 
+    # ---- Team ----
     with tab2:
-        st.markdown("### User Management")
-
-        col1, col2 = st.columns([2, 1])
-
-        with col1:
-            # List existing users (would need an API endpoint)
-            st.markdown("#### Existing Users")
-
-            # Fetch users from Neo4j directly
+        c1, c2 = st.columns([2, 1])
+        with c1:
+            st.markdown('<div class="section-title">Team Members</div>', unsafe_allow_html=True)
             try:
                 from src.graph.client import get_neo4j_client
                 neo4j = get_neo4j_client()
@@ -1187,166 +1453,144 @@ def admin_page():
                     RETURN u.name as name, u.email as email, u.role as role
                     ORDER BY u.name
                 """)
-
                 if result:
-                    users_df = pd.DataFrame([dict(r) for r in result])
-                    st.dataframe(users_df, hide_index=True, use_container_width=True)
+                    st.dataframe(pd.DataFrame([dict(r) for r in result]), hide_index=True, use_container_width=True)
                 else:
-                    st.info("No users found")
-            except Exception as e:
-                st.warning(f"Could not fetch users: {e}")
+                    st.info("No team members found.")
+            except Exception:
+                st.warning("Could not load team members.")
 
-        with col2:
-            st.markdown("#### Add New User")
-            with st.form("add_user_form"):
-                user_name = st.text_input("Full Name", placeholder="John Doe")
-                user_email = st.text_input("Email", placeholder="john@agency.com")
-                user_password = st.text_input("Password", type="password")
-                user_role = st.selectbox("Role", ["analyst", "manager", "admin"])
+        with c2:
+            st.markdown('<div class="section-title">Invite Member</div>', unsafe_allow_html=True)
+            with st.form("add_user"):
+                uname = st.text_input("Full name", placeholder="Jane Smith")
+                uemail = st.text_input("Email", placeholder="jane@company.com")
+                upass = st.text_input("Password", type="password")
+                urole = st.selectbox("Role", ["analyst", "manager", "admin"])
 
                 # Client assignment
-                response = api_request("GET", "/ingest/clients")
-                client_options = []
-                if response and response.status_code == 200:
-                    clients = response.json().get("clients", [])
+                client_resp = api_request("GET", "/ingest/clients")
+                opts = []
+                if client_resp and client_resp.status_code == 200:
                     seen = set()
-                    for c in clients:
+                    for c in client_resp.json().get("clients", []):
                         if c["name"] not in seen:
                             seen.add(c["name"])
-                            client_options.append((c["id"], c["name"]))
-
-                assigned_clients = st.multiselect(
-                    "Assign to Clients",
-                    options=[c[0] for c in client_options],
-                    format_func=lambda x: next((c[1] for c in client_options if c[0] == x), x),
+                            opts.append((c["id"], c["name"]))
+                assigned = st.multiselect(
+                    "Assign to accounts",
+                    options=[o[0] for o in opts],
+                    format_func=lambda x: next((o[1] for o in opts if o[0] == x), x),
                 )
 
-                if st.form_submit_button("Add User", use_container_width=True):
-                    if user_name and user_email and user_password:
-                        response = api_request(
-                            "POST",
-                            "/auth/register",
-                            json={
-                                "name": user_name,
-                                "email": user_email,
-                                "password": user_password,
-                                "role": user_role,
-                                "client_ids": assigned_clients,
-                            },
-                        )
-                        if response and response.status_code == 201:
-                            st.success(f"User '{user_name}' created!")
+                if st.form_submit_button("Add member", use_container_width=True):
+                    if uname and uemail and upass:
+                        resp = api_request("POST", "/auth/register", json={
+                            "name": uname, "email": uemail,
+                            "password": upass, "role": urole,
+                            "client_ids": assigned,
+                        })
+                        if resp and resp.status_code == 201:
+                            st.success(f"'{uname}' added.")
                             st.rerun()
                         else:
-                            error_msg = "Failed to create user"
-                            if response:
-                                error_msg = response.json().get("detail", error_msg)
-                            st.error(error_msg)
+                            st.error(resp.json().get("detail", "Failed to add member") if resp else "Connection error")
                     else:
-                        st.error("Please fill in all required fields")
+                        st.warning("Please fill in all fields.")
 
+    # ---- System ----
     with tab3:
-        st.markdown("### System Settings")
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown('<div class="section-title">API Health</div>', unsafe_allow_html=True)
+            try:
+                health_resp = requests.get(f"{API_BASE_URL.replace('/api', '')}/health", timeout=5)
+                if health_resp.status_code == 200:
+                    h = health_resp.json()
+                    badge = "status-active" if h.get("status") == "healthy" else "status-paused"
+                    st.markdown(f'<span class="{badge}">{h.get("status", "unknown").title()}</span>', unsafe_allow_html=True)
+                    st.caption(f"Database: {h.get('neo4j', 'unknown')}")
+                else:
+                    st.markdown('<span class="status-error">Unreachable</span>', unsafe_allow_html=True)
+            except Exception:
+                st.markdown('<span class="status-error">Unreachable</span>', unsafe_allow_html=True)
 
-        col1, col2 = st.columns(2)
-
-        with col1:
-            st.markdown("#### API Configuration")
-            st.text_input("API Base URL", value=API_BASE_URL, disabled=True)
-
-            # Check API health
-            response = requests.get(f"{API_BASE_URL.replace('/api', '')}/health", timeout=5)
-            if response.status_code == 200:
-                health = response.json()
-                st.success(f"API Status: {health.get('status', 'unknown')}")
-                st.caption(f"Neo4j: {health.get('neo4j', 'unknown')}")
-            else:
-                st.error("API not responding")
-
-            st.markdown("#### Database")
+            st.markdown('<div class="section-title">Database</div>', unsafe_allow_html=True)
             try:
                 from src.graph.client import get_neo4j_client
                 neo4j = get_neo4j_client()
                 if neo4j.verify_connectivity():
-                    st.success("Neo4j: Connected")
-
-                    # Get node counts
+                    st.markdown('<span class="status-active">Connected</span>', unsafe_allow_html=True)
                     result = neo4j.execute_query("""
                         MATCH (n)
                         RETURN labels(n)[0] as label, count(*) as count
                         ORDER BY count DESC
                     """)
                     if result:
-                        st.markdown("**Node Counts:**")
                         for r in result:
-                            st.caption(f"- {r['label']}: {r['count']:,}")
+                            st.caption(f"{r['label']}: {r['count']:,}")
                 else:
-                    st.error("Neo4j: Disconnected")
-            except Exception as e:
-                st.error(f"Neo4j error: {e}")
+                    st.markdown('<span class="status-error">Disconnected</span>', unsafe_allow_html=True)
+            except Exception:
+                st.markdown('<span class="status-error">Error</span>', unsafe_allow_html=True)
 
-        with col2:
-            st.markdown("#### LLM Configuration")
+        with c2:
+            st.markdown('<div class="section-title">AI Model</div>', unsafe_allow_html=True)
             st.text_input("Model", value="claude-sonnet-4-20250514", disabled=True)
-
-            # Check if API key is set
             api_key = os.getenv("ANTHROPIC_API_KEY", "")
             if api_key and len(api_key) > 10:
-                st.success("Anthropic API Key: Configured")
+                st.markdown('<span class="status-active">API key configured</span>', unsafe_allow_html=True)
             else:
-                st.error("Anthropic API Key: Not configured")
+                st.markdown('<span class="status-error">API key missing</span>', unsafe_allow_html=True)
 
-            st.markdown("#### Notifications")
-            slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
-            sendgrid_key = os.getenv("SENDGRID_API_KEY", "")
+            st.markdown('<div class="section-title">Integrations</div>', unsafe_allow_html=True)
+            slack = os.getenv("SLACK_WEBHOOK_URL", "")
+            sg = os.getenv("SENDGRID_API_KEY", "")
+            st.caption(f"Slack: {'Configured' if slack else 'Not configured'}")
+            st.caption(f"Email (SendGrid): {'Configured' if sg else 'Not configured'}")
 
-            st.caption(f"Slack: {'Configured' if slack_url else 'Not configured'}")
-            st.caption(f"SendGrid: {'Configured' if sendgrid_key else 'Not configured'}")
-
+    # ---- Activity ----
     with tab4:
-        st.markdown("### Audit Log")
-        st.info("Recent system activity and user actions")
-
+        st.markdown('<div class="section-title">Recent Activity</div>', unsafe_allow_html=True)
         try:
             from src.graph.client import get_neo4j_client
             neo4j = get_neo4j_client()
             result = neo4j.execute_query("""
                 MATCH (a:AuditLog)
-                RETURN a.timestamp as timestamp, a.user_email as user, a.action as action, a.details as details
+                RETURN a.timestamp as timestamp, a.user_email as user,
+                       a.action as action, a.details as details
                 ORDER BY a.timestamp DESC
                 LIMIT 50
             """)
-
             if result:
-                audit_df = pd.DataFrame([dict(r) for r in result])
-                st.dataframe(audit_df, hide_index=True, use_container_width=True)
+                st.dataframe(pd.DataFrame([dict(r) for r in result]), hide_index=True, use_container_width=True)
             else:
-                st.info("No audit logs found")
-        except Exception as e:
-            st.warning(f"Could not fetch audit logs: {e}")
+                st.info("No activity recorded yet.")
+        except Exception:
+            st.info("Activity log unavailable.")
 
+
+# ---------------------------------------------------------------------------
+# Main
+# ---------------------------------------------------------------------------
 
 def main():
-    """Main application entry point."""
-    # Check authentication
     if not st.session_state.token:
         login_page()
         return
 
-    # Render sidebar and get current page
     page = sidebar()
 
-    # Render selected page
-    if page == "Query":
-        query_page()
-    elif page == "Dashboard":
-        dashboard_page()
+    if page == "Home":
+        home_page()
+    elif page == "Ask":
+        ask_page()
     elif page == "Reports":
         reports_page()
-    elif page == "Data Import":
-        data_import_page()
-    elif page == "Admin":
-        admin_page()
+    elif page == "Data Sources":
+        data_sources_page()
+    elif page == "Settings":
+        settings_page()
 
 
 if __name__ == "__main__":
